@@ -17,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/Mart0Valov/CurrencyConvertor/issues"
   },
-  "homepage": "https://github.com/Mart0Valov/CurrencyConvertor#readme"
+  "homepage": "https://github.com/Mart0Valov/CurrencyConvertor#readme",
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  }
 }
