@@ -1,9 +1,7 @@
 import fetch from 'node-fetch';
-import data from '../config.json' assert { type: 'json' };
+import { currenciesEndPoint } from './endpoints.js';
 
-const apiKey = data.api_key;
-const endPoint = `https://api.fastforex.io/currencies?api_key=${apiKey}`;
-
+const endPoint = currenciesEndPoint();
 
 export default async function fetchCurrencies() {
     // Function to fetch all available currencies.
@@ -15,5 +13,3 @@ export default async function fetchCurrencies() {
         console.log(err.message);
     }
 }
-
-// fetch(endPoint).then(res => res.json()).then(data => console.log(data)).catch(err => console.log(err))
