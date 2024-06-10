@@ -3,9 +3,12 @@ import validateBaseAmount from "./Validators/validateBaseAmount.js";
 import currencyValidator from "./Validators/currencyValidator.js";
 import fetchCurrencies from './Api/fetchCurrencies.js'
 import fetchOne from './Api/fetchOne.js';
-
+import fs from 'fs/promises';
+import readAndWriteJson from './DataUtils/writeToDataJson.js';
 // TODO: accept date as flag
 // Make requests with that flag historycal
+
+const dateArg = process.argv[2];
 
 const rl = readline.createInterface({
     input: process.stdin,
@@ -13,6 +16,7 @@ const rl = readline.createInterface({
 });
 
 let currencies = {};
+const cache = {};
 
 const currentConversion = {
     amount: 0,
@@ -40,16 +44,26 @@ function main(command) {
         } else if (!currentConversion.targetCurrency) {
             if (currencyValidator(inputToLowerCase, currencies)) {
                 currentConversion.targetCurrency = inputToLowerCase.toUpperCase();
-                
-                fetchOne(currentConversion.baseCurrency, currentConversion.targetCurrency).then(data => {
-                    console.log(currentConversion.amount * data.result[currentConversion.targetCurrency]);
+
+                const cacheKey = currentConversion.baseCurrency + currentConversion.targetCurrency;
+                if (cacheKey in cache) {
+                    console.log(currentConversion.amount * cache[cacheKey].result[currentConversion.targetCurrency]);
+                    readAndWriteJson('./conversions.json', conversionData);
                     resetCurrentConversion();
-                    // cache functionality
-                    // saving to json file
-                    // reset currentConversion
-                });
-
-
+                } else {
+                    fetchOne(currentConversion.baseCurrency, currentConversion.targetCurrency).then(data => {
+                        console.log(currentConversion.amount * data.result[currentConversion.targetCurrency]);
+                        cache[cacheKey] = data;
+                        const conversionData = {
+                            amount: currentConversion.amount,
+                            base_currency: currentConversion.baseCurrency,
+                            target_currency: currentConversion.targetCurrency,
+                            converted_amount: currentConversion.amount * data.result[currentConversion.targetCurrency]
+                        }
+                        readAndWriteJson('./conversions.json', conversionData);
+                        resetCurrentConversion();
+                    });
+                }
             } else {
                 console.log('Please enter a valid currency code');
             }
