@@ -8,7 +8,7 @@ import readAndWriteJson from './DataUtils/writeToDataJson.js';
 // TODO: accept date as flag
 // Make requests with that flag historycal
 
-const dateArg = process.argv[2];
+const dateFlag = process.argv[2];
 
 const rl = readline.createInterface({
     input: process.stdin,
@@ -47,18 +47,36 @@ function main(command) {
 
                 const cacheKey = currentConversion.baseCurrency + currentConversion.targetCurrency;
                 if (cacheKey in cache) {
-                    console.log(currentConversion.amount * cache[cacheKey].result[currentConversion.targetCurrency]);
+                    const conversed = (currentConversion.amount * cache[cacheKey].results[currentConversion.targetCurrency]).toFixed(2);
+
+                    console.log(`${currentConversion.amount} ${currentConversion.baseCurrency} is ${conversed} ${currentConversion.targetCurrency}`)
+                    // console.log(cache);
+                    const conversionData = {
+                        date: dateFlag,
+                        amount: currentConversion.amount,
+                        base_currency: currentConversion.baseCurrency,
+                        target_currency: currentConversion.targetCurrency,
+                        converted_amount: currentConversion.amount * cache[cacheKey].results[currentConversion.targetCurrency]
+                    }
+
                     readAndWriteJson('./conversions.json', conversionData);
                     resetCurrentConversion();
                 } else {
-                    fetchOne(currentConversion.baseCurrency, currentConversion.targetCurrency).then(data => {
-                        console.log(currentConversion.amount * data.result[currentConversion.targetCurrency]);
+                    fetchOne(currentConversion.baseCurrency, currentConversion.targetCurrency, dateFlag).then(data => {
+
+                        const conversed = (currentConversion.amount * data.results[currentConversion.targetCurrency]).toFixed(2);
+
+                        console.log(`${currentConversion.amount} ${currentConversion.baseCurrency} is ${conversed} ${currentConversion.targetCurrency}`)
+
                         cache[cacheKey] = data;
+                        console.log(cache);
+
                         const conversionData = {
+                            date: dateFlag,
                             amount: currentConversion.amount,
                             base_currency: currentConversion.baseCurrency,
                             target_currency: currentConversion.targetCurrency,
-                            converted_amount: currentConversion.amount * data.result[currentConversion.targetCurrency]
+                            converted_amount: currentConversion.amount * data.results[currentConversion.targetCurrency]
                         }
                         readAndWriteJson('./conversions.json', conversionData);
                         resetCurrentConversion();
